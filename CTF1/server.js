@@ -19,15 +19,25 @@ app.get('/',(req,res) => {
 
 
 app.get('/login', (req,res) => {
-    res.sendFile(path.join(__dirname + '/public' + '/index.html'))
+    const userAgent = req.headers["user-agent"] || "";
+
+    
+    if (userAgent.includes("p0ch4nk4")) {
+      res.sendFile(path.join(__dirname, "public", "/flag.html"));
+    } else {
+      res.sendFile(path.join(__dirname, "public", "/index.html"));
+    }
 })
 
 app.post("/login", (req, res) => {
   const { usuario, senha } = req.body;
 
-  if (usuario === "AindaEstouPensando" && senha === "AindaNaoSei") {
+  if (usuario === "MuS1ca" && senha === "api690") {
     res.json({ redirect: "/Acesso" });
-  } else {
+  } else if (usuario === "MuS1ca" && senha === "P4c1Enc1A"){
+    res.status(401).send("Voce nao foi paciente.");
+  }
+  else {
     res.status(401).send("Usuário ou senha inválidos");
   }
 });
@@ -45,31 +55,23 @@ app.listen(port, () => {
 
 
 
-// FTP
-const ftpServer = new FtpSrv({
-  url: `ftp://0.0.0.0:${FTP_PORT}`,
-  anonymous: true,        
-  greeting: ['Bem-vindo ao CTF FTP!'],
-
+const ftpServer = new FtpSrv(`ftp://0.0.0.0:${FTP_PORT}`, {
+  anonymous: true,
+  greeting: ["Bem-vindo ao CTF FTP!"]
 });
 
-ftpServer.on('login', ({ connection, username, password }, resolve, reject) => {
-  // para CTF deixamos anônimo ou fornecemos credenciais simples
-  if (username === 'anonymous' || username === 'ftp' || username === 'ctf') {
-    // o caminho base do usuário no FTP
+ftpServer.on("login", ({ connection, username, password }, resolve, reject) => {
+  if (username === "anonymous" || username === "ftp" || username === "ctf") {
+    resolve({ root: FTP_ROOT });
+  } else if (username === "player" && password === "ctf123") {
     resolve({ root: FTP_ROOT });
   } else {
-    // se quiser suportar senha simples:
-    if (username === 'player' && password === 'ctf123') {
-      resolve({ root: FTP_ROOT });
-    } else {
-      reject(new Error('Credenciais inválidas'));
-    }
+    reject(new Error("Credenciais inválidas"));
   }
 });
 
-ftpServer.listen().then(() => {
-  console.log(`FTP server running at ftp://localhost:${FTP_PORT} (anonymous allowed)`);
-}).catch(err => {
-  console.error('Erro ao iniciar FTP:', err);
-});
+ftpServer
+  .listen()
+  .then(() => {
+
+    });
